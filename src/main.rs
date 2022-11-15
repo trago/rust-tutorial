@@ -122,15 +122,36 @@ mod topology {
         }
 
         pub fn has_point(&self, p1: &Point) -> bool {
-            todo!()
+            if self.p_tl.x<=p1.x && p1.x<=self.p_br.x && self.p_br.y<=p1.y && p1.y<=self.p_tl.y{
+                return true;
+            }
+            return false;
         }
 
-        pub fn has_square(&self, sq: &Square) -> bool {
-            todo!()
+        pub fn has_square(&self, sqr: &Square) -> bool {
+            let temp_point_1:Point = Point::new( sqr.p_tl.x , sqr.p_tl.y - sqr.height());
+            let temp_point_2:Point = Point::new( sqr.p_tl.x + sqr.width(), sqr.p_tl.y );
+
+            if self.has_point(&sqr.p_tl) || self.has_point(&sqr.p_br) ||
+                self.has_point(&temp_point_1) || self.has_point(&temp_point_2) {
+                return true;
+            }
+            return false;
         }
 
-        pub fn manhattan_distance(&self, sq: &Square) -> f64 {
-            todo!()
+        pub fn manhattan_distance(&self, sqr: &Square) -> f64 {
+            let distance:f64;
+            let mut value_1:f64 = 0.0;
+            let mut value_2:f64 = 0.0;
+
+            if !self.has_square(&sqr) && !sqr.has_square(&self){
+                value_1 = self.p_br.x-sqr.p_tl.x;
+                value_1 = value_1.abs();
+                value_2 = self.p_tl.x-sqr.p_br.x;
+                value_2 = value_2.abs();
+            }
+            distance = if value_1<value_2 {value_1} else {value_2};
+            return distance;
         }
     }
 }
@@ -217,5 +238,51 @@ mod test {
         sq.erosion(0.5);
 
         assert_eq!(sq.area(), 9.0);
+    }
+
+    #[test]
+    fn has_point_test(){
+        let p1:Point = Point::new(0.0,1.0);
+        let p2:Point = Point::new(1.0,0.0);
+
+        let p3:Point = Point::new(2.0,3.0);
+        let p4:Point = Point::new(3.0,2.0);
+
+        let p5:Point = Point::new(0.5,0.5);
+
+        let sqr1:Square = Square::new(p1,p2);
+        let sqr2:Square = Square::new(p3,p4);
+
+        //assert!( sqr1.has_point(&p5) );
+        assert!( !sqr2.has_point(&p5) );
+    }
+
+    #[test]
+    fn has_square_test(){
+        let p1:Point = Point::new(0.0,4.0);
+        let p2:Point = Point::new(4.0,0.0);
+
+        let p3:Point = Point::new(2.0,3.0);
+        let p4:Point = Point::new(3.0,2.0);
+
+        let sqr1:Square = Square::new(p1,p2);
+        let sqr2:Square = Square::new(p3,p4);
+
+        //assert!( sqr1.has_square(&sqr2) );
+        assert!( !sqr2.has_square(&sqr1) );
+    }
+
+    #[test]
+    fn manhattan_distance_test(){
+        let p1:Point = Point::new(0.0,1.0);
+        let p2:Point = Point::new(1.0,0.0);
+
+        let p3:Point = Point::new(2.0,3.0);
+        let p4:Point = Point::new(3.0,2.0);
+
+        let sqr1:Square = Square::new(p1,p2);
+        let sqr2:Square = Square::new(p3,p4);
+
+        assert_eq!(sqr1.manhattan_distance(&sqr2), 1.0);
     }
 }
