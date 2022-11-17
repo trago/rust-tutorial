@@ -1,6 +1,9 @@
 mod ml_data;
 
-fn main() {}
+use crate::ml_data::read_ml_json;
+use crate::ml_data::MLDataContainer;
+use crate::ml_data::Node;
+use std::path::Path;
 
 fn consume_s(s: String) -> usize {
     s.len()
@@ -279,4 +282,45 @@ mod test {
 
         assert_eq!(sqr1.manhattan_distance(&sqr2), 2.0);
     }
+}
+
+fn test_list(){
+
+    //let path = Path::new("resources/1645511997141_M8INRNFV6O_curr.json");
+    let path_old = Path::new("resources/1663154348643_8ZGUJJLLWV/ml_data/1663154348643_8ZGUJJLLWV.json");
+    let path_curr = Path::new("resources/1663154348643_8ZGUJJLLWV/current/1663154348643_8ZGUJJLLWV.json");
+    //let path = Path::new("t.json");
+    let data_old = read_ml_json(&path_old);
+    //let data_curr = read_ml_json(&path_curr); // BAD FORMAT
+
+    let n = data_old.element_statistics.nodes.len();
+    println!("{}", n );
+
+    for (key,value) in &data_old.element_statistics.nodes[n-1].a{
+        println!("{} {}", key, value );
+    }
+
+    //println!("{}", data_old.element_statistics.nodes[15].a.values() );
+    
+    //let origin = data_old.element_statistics.tree[0].c.expect("REASON").get("origin").unwrap();
+    //println!("{}", origin[0].i ); -- WRONG - WHAT IS ...tree[i].c?
+
+}
+
+pub fn find_XX( data : MLDataContainer ) -> Option<Node> {
+
+    for i in 0..data.element_statistics.nodes.len() {
+        for (key,value) in &data.element_statistics.nodes[i].a{
+            if key=="XX"{
+                return Some(data.element_statistics.nodes[i].clone());
+            }
+        }
+    }
+
+    return None;
+
+}
+
+fn main(){
+
 }
