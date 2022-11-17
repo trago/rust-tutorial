@@ -307,20 +307,82 @@ fn test_list(){
 
 }
 
-pub fn find_XX( data : MLDataContainer ) -> Option<Node> {
+pub fn filter_nodes( tag:&String, data : &MLDataContainer ) -> Vec<Node>{
+    let mut nodes_vec : Vec<Node> = Vec::new();
+    for i in 0..data.element_statistics.nodes.len() {
+        if data.element_statistics.nodes[i].a.contains_key(tag){
+            nodes_vec.push( data.element_statistics.nodes[i].clone() );
+        }
+    }
+    return nodes_vec;
+}
+
+pub fn find_XX( data : &MLDataContainer ) -> Option<Node> {
 
     for i in 0..data.element_statistics.nodes.len() {
-        for (key,value) in &data.element_statistics.nodes[i].a{
-            if key=="XX"{
-                return Some(data.element_statistics.nodes[i].clone());
-            }
+        if data.element_statistics.nodes[i].a.contains_key("XX"){
+            return Some(data.element_statistics.nodes[i].clone());
+        }
+    }
+    return None;
+}
+
+pub fn node_correlation(node_1:&Node, node_2:&Node) -> f64 {
+    let mut total:f64 = 0.0;
+    let mut count:f64 = 0.0;
+    let mut visited:Vec<String> = Vec::new();
+
+    for key in node_1.a.keys(){
+        total += 1.0;
+        visited.push(key.to_string());
+        if node_2.a.contains_key( key ) && node_1.a[key]==node_2.a[key]{
+            count += 1.0;
         }
     }
 
-    return None;
+    for key in node_2.a.keys(){
+        if !visited.contains(key){
+            total += 1.0;
+        }
+    }
+    println!("{}/{}",count,total);
+    return count/total;
 
 }
 
-fn main(){
 
+pub fn correlation_vector( node_org:&Node , nodes_vecs:&Vec<Node> ) -> Vec<f64>{
+    let mut i:usize=0;
+
+    let mut correlation_vec:Vec<f64> = vec![0.0; nodes_vecs.len()];
+    
+    for node in nodes_vecs{
+        correlation_vec[i] = node_correlation(&node_org, &node);
+        i += 1;
+    }
+
+    return correlation_vec;
+}
+
+fn main(){
+    let path_old = Path::new("resources/1663154348643_8ZGUJJLLWV/ml_data/1663154348643_8ZGUJJLLWV.json");
+    let data_old = read_ml_json(&path_old);
+
+    let xx_node = find_XX( &data_old ).unwrap();
+
+    let tag:String = "TV".to_string();
+    let nodes_vec = filter_nodes( &tag , &data_old );
+    let cor_vec = correlation_vector( &xx_node, &nodes_vec );
+
+    let mut i:usize=0;
+    for j in 1..data_old.element_statistics.nodes.len(){
+        if data_old.element_statistics.nodes[j].a.contains_key("XX"){
+            i = j;
+            break;
+        }
+    }
+
+    for cor in cor_vec{
+        println!("{}",cor);
+    }
 }
