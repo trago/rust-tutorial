@@ -373,8 +373,6 @@ fn main(){
 
     let cor_vec = correlation_vector( &xx_node, &nodes_vec );
 
-    for cor in cor_vec{
-        println!("{}",cor);
-    }
+    println!("{:?}",cor_vec);
 
 }
