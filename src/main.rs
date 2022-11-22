@@ -330,22 +330,18 @@ pub fn find_XX( data : &MLDataContainer ) -> Option<Node> {
 pub fn node_correlation(node_1:&Node, node_2:&Node) -> f64 {
     let mut total:f64 = 0.0;
     let mut count:f64 = 0.0;
-    let mut visited:Vec<String> = Vec::new();
 
     for key in node_1.a.keys(){
+        if key=="XX" || key=="HT" || key=="WH" || key=="TP"{
+            continue;
+        }
         total += 1.0;
-        visited.push(key.to_string());
+
         if node_2.a.contains_key( key ) && node_1.a[key]==node_2.a[key]{
             count += 1.0;
         }
     }
 
-    for key in node_2.a.keys(){
-        if !visited.contains(key){
-            total += 1.0;
-        }
-    }
-    println!("{}/{}",count,total);
     return count/total;
 
 }
@@ -367,25 +363,18 @@ pub fn correlation_vector( node_org:&Node , nodes_vecs:&Vec<Node> ) -> Vec<f64>{
 fn main(){
     let path_old = Path::new("resources/1663154348643_8ZGUJJLLWV/ml_data/1663154348643_8ZGUJJLLWV.json");
     let data_old = read_ml_json(&path_old);
-
+    
     let path_curr = Path::new("resources/1663154348643_8ZGUJJLLWV/current/1663154348643_8ZGUJJLLWV.json");
     //let data_curr = read_ml_json(&path_curr);
-
+    
     let xx_node = find_XX( &data_old ).unwrap();
+    
+    let nodes_vec = read_ml_json(&path_old).element_statistics.nodes;
 
-    let tag:String = "TV".to_string();
-    let nodes_vec = filter_nodes( &tag , &data_old );
     let cor_vec = correlation_vector( &xx_node, &nodes_vec );
-
-    let mut i:usize=0;
-    for j in 1..data_old.element_statistics.nodes.len(){
-        if data_old.element_statistics.nodes[j].a.contains_key("XX"){
-            i = j;
-            break;
-        }
-    }
 
     for cor in cor_vec{
         println!("{}",cor);
     }
+
 }
