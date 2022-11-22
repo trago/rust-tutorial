@@ -368,6 +368,9 @@ fn main(){
     let path_old = Path::new("resources/1663154348643_8ZGUJJLLWV/ml_data/1663154348643_8ZGUJJLLWV.json");
     let data_old = read_ml_json(&path_old);
 
+    let path_curr = Path::new("resources/1663154348643_8ZGUJJLLWV/current/1663154348643_8ZGUJJLLWV.json");
+    //let data_curr = read_ml_json(&path_curr);
+
     let xx_node = find_XX( &data_old ).unwrap();
 
     let tag:String = "TV".to_string();
