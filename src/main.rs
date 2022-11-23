@@ -46,7 +46,7 @@ mod topology {
                 p_br: Point::new(max_x, max_y),
             }
         }
-        
+
         pub fn lower(&self) -> &Point {
             &self.p_tl
         }
@@ -126,7 +126,19 @@ mod topology {
         }
 
         pub fn has_square(&self, sq: &Square) -> bool {
-            todo!()
+            if ((self.p_tl.x <= sq.p_br.x && sq.p_br.x <= self.p_br.x)
+                || (self.p_tl.x <= sq.p_tl.x && sq.p_tl.x <= self.p_br.x))
+                && ((self.p_tl.y <= sq.p_br.y && sq.p_br.y <= self.p_br.y)
+                    || (self.p_tl.y <= sq.p_tl.y && sq.p_tl.y <= self.p_br.y))
+                || ((sq.p_tl.x <= self.p_br.x && self.p_br.x <= sq.p_br.x)
+                    || (sq.p_tl.x <= self.p_tl.x && self.p_tl.x <= sq.p_br.x))
+                    && ((sq.p_tl.y <= self.p_br.y && self.p_br.y <= sq.p_br.y)
+                        || (sq.p_tl.y <= self.p_tl.y && self.p_tl.y <= sq.p_br.y))
+            {
+                true
+            } else {
+                false
+            }
         }
 
         pub fn manhattan_distance(&self, sq: &Square) -> f64 {
@@ -134,9 +146,35 @@ mod topology {
         }
     }
 }
+
+// filters the nodes if its geometry intersects with that of `base_node`
+pub fn find_intersections(
+    base_node: topology::Square,
+    nodes: &Vec<ml_data::Node>,
+) -> Vec<ml_data::Node> {
+    let mut intersections = Vec::new();
+
+    for node in nodes.iter() {
+        let tmp_node_x = node.a["TP"].parse::<f64>().unwrap();
+        let tmp_node_h = node.a["HT"].parse::<f64>().unwrap();
+        let tmp_node_w = node.a["WH"].parse::<f64>().unwrap();
+        let tmp_sqr = topology::Square::new(
+            topology::Point::new(tmp_node_x, tmp_node_x),
+            topology::Point::new(tmp_node_x + tmp_node_w, tmp_node_x + tmp_node_h),
+        );
+        if base_node.has_square(&tmp_sqr) {
+            intersections.push(node.clone());
+        }
+    }
+    intersections
+}
+
 #[cfg(test)]
 mod test {
+    use crate::find_intersections;
+    use crate::ml_data::{read_ml_json, search_xx};
     use crate::topology::{Point, Square};
+    use std::path::Path;
 
     #[test]
     fn point_test() {
@@ -209,6 +247,8 @@ mod test {
         assert_eq!(s3.upper().x(), 3.0);
         assert_eq!(s3.upper().y(), 4.0);
     }
+
+    #[test]
     fn erosion_test() {
         let p1: Point = Point::new(0.0, 4.0);
         let p2: Point = Point::new(4.0, 0.0);
@@ -217,5 +257,35 @@ mod test {
         sq.erosion(0.5);
 
         assert_eq!(sq.area(), 9.0);
+    }
+
+    #[test]
+    fn has_square_test() {
+        let p1 = Point::new(0.0, 0.0);
+        let p2 = Point::new(2.0, 2.0);
+        let sq1 = Square::new(p1, p2);
+
+        let p3 = Point::new(-1.0, -1.0);
+        let p4 = Point::new(3.0, 3.0);
+        let sq2 = Square::new(p3, p4);
+
+        let intersection = sq1.has_square(&sq2);
+        assert_eq!(intersection, true);
+    }
+
+    #[test]
+    fn find_intersections_test() {
+        let path = Path::new("resources/1645511997141_M8INRNFV6O_curr.json");
+        let data = read_ml_json(&path);
+        let node = search_xx(&data.element_statistics.nodes);
+        let tmp_node_x = node.a["TP"].parse::<f64>().unwrap();
+        let tmp_node_h = node.a["HT"].parse::<f64>().unwrap();
+        let tmp_node_w = node.a["WH"].parse::<f64>().unwrap();
+        let base_sqr = Square::new(
+            Point::new(tmp_node_x, tmp_node_x),
+            Point::new(tmp_node_x + tmp_node_w, tmp_node_x + tmp_node_h),
+        );
+        let intersections = find_intersections(base_sqr, &data.element_statistics.nodes);
+        println!("Total intersections {}", intersections.len());
     }
 }
