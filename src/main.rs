@@ -2,11 +2,11 @@ mod ml_data;
 
 fn main() {}
 
-fn consume_s(s: String) -> usize {
+fn _consume_s(s: String) -> usize {
     s.len()
 }
 
-enum State<T, Q = i32> {
+enum _State<T, Q = i32> {
     ON(Q),
     OFF(T),
 }
@@ -121,10 +121,6 @@ mod topology {
             self.dilate_y(1.0 / d);
         }
 
-        pub fn has_point(&self, p1: &Point) -> bool {
-            todo!()
-        }
-
         pub fn has_square(&self, sq: &Square) -> bool {
             if ((self.p_tl.x <= sq.p_br.x && sq.p_br.x <= self.p_br.x)
                 || (self.p_tl.x <= sq.p_tl.x && sq.p_tl.x <= self.p_br.x))
@@ -139,10 +135,6 @@ mod topology {
             } else {
                 false
             }
-        }
-
-        pub fn manhattan_distance(&self, sq: &Square) -> f64 {
-            todo!()
         }
     }
 }

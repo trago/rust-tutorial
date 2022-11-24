@@ -44,28 +44,6 @@ pub fn read_ml_json(path: &Path) -> MLDataContainer {
     MLDataContainer::deserialize(deserializer).unwrap()
 }
 
-fn calc_val(v1: f32, v2: f32) -> Option<f32> {
-    if v2 == 0.0 {
-        None
-    } else {
-        Some(v1 / v2)
-    }
-}
-
-fn sum_rate(v1: f32, v2: f32, val: f32) -> Option<f32> {
-    let rate = calc_val(v1, v2)?;
-    //match rate {
-    //    Some(r) =>{
-    //        Some(r + val)
-    //    },
-    //    None => {
-    //        None
-    //    }
-    //}
-
-    Some(rate + val)
-}
-
 // filters a vector of nodes based on the `XX` key value of `node.a` attribute
 pub fn search_xx(nodes: &Vec<Node>) -> Node {
     let mut nodexx: Node = nodes[1].clone();
@@ -80,15 +58,27 @@ pub fn search_xx(nodes: &Vec<Node>) -> Node {
 
 // computes the correlation between a given node and a vector of nodes
 fn correlate(base_node: &Node, nodes: &Vec<Node>) -> Vec<f64> {
-    let size_base_node = base_node.a.len() as f64;
     let mut corr = Vec::new();
+    let dont_compare = vec![
+        String::from("WH"),
+        String::from("LT"),
+        String::from("TP"),
+        String::from("HT"),
+    ];
+
+    let size_base_node = base_node
+        .a
+        .iter()
+        .filter(|(gk, _)| !dont_compare.contains(&*gk))
+        .count() as f64;
+
     for node in nodes.iter() {
         let mut sum = 0.0;
         for (k, v) in base_node.a.iter() {
             sum += node
                 .a
                 .iter()
-                .filter(|(gk, gv)| *gk == k && *gv == v)
+                .filter(|(gk, gv)| *gk == k && *gv == v && !dont_compare.contains(&*gk))
                 .count() as f64;
         }
         corr.push(sum / size_base_node);
