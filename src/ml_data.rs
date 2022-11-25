@@ -31,10 +31,10 @@ pub struct TreeNode {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MLDataContainer {
-    element_statistics: MLData,
+    pub element_statistics: MLData,
 }
 
-fn read_ml_json(path: &Path) -> MLDataContainer{
+pub fn read_ml_json(path: &Path) -> MLDataContainer{
 
     let json_str = fs::read_to_string(path).unwrap();
 
@@ -43,67 +43,4 @@ fn read_ml_json(path: &Path) -> MLDataContainer{
     let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
 
     MLDataContainer::deserialize(deserializer).unwrap()
-}
-
-fn calc_val(v1: f32, v2:f32) -> Option<f32>{
-    if v2 == 0.0{
-        None
-    }else {
-        Some(v1/v2)
-    }
-}
-
-fn sum_rate(v1: f32, v2:f32, val: f32) -> Option<f32>{
-    let rate = calc_val(v1, v2)?;
-    //match rate {
-    //    Some(r) =>{
-    //        Some(r + val)
-    //    },
-    //    None => {
-    //        None
-    //    }
-    //}
-
-    Some(rate + val)
-}
-
-#[derive(Serialize, Deserialize)]
-struct Person {
-    name: String,
-    age: u8,
-    phones: Vec<String>,
-    height :f32
-}
-
-#[cfg(test)]
-mod test{
-    use std::path::Path;
-    use crate::ml_data::{Person, read_ml_json};
-
-    #[test]
-    fn json_test(){
-        let data = r#"
-        {
-            "name": "John Doe",
-            "age": 43,
-            "phones": [
-                "+44 1234567",
-                "+44 2345678"
-            ]
-        }"#;
-
-        let p: Person = serde_json::from_str(data).unwrap();
-
-        // Do things just like with any other Rust data structure.
-        println!("Please call {} at the number {}", p.name, p.phones[0]);
-    }
-
-
-    #[test]
-    fn load_json_test(){
-        let path = Path::new("resources/1645511997141_M8INRNFV6O_curr.jso");
-        let data = read_ml_json(&path);
-
-        println!("{}", data.element_statistics.nodes.len());
-    }
 }
